@@ -1,0 +1,329 @@
+#AWSTemplateFormatVersion: 2010-09-09
+#Description: ---
+#Metadata: 
+
+Parameters: 
+  author:
+    Description: please input your name
+    Type: String
+    Default: arai
+
+  keypair:
+    Description: please select your keypair
+    Type: AWS::EC2::KeyPair::KeyName
+
+#Mappings: 
+
+#Conditions: 
+
+Resources: 
+
+  myVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-vpc-01
+
+  mySubnet01:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pub-1a
+
+  mySubnet02:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pub-1c
+
+  mySubnet03:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.3.0/24
+      AvailabilityZone: "ap-northeast-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pri-1a
+
+  mySubnet04:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref myVPC
+      CidrBlock: 10.0.4.0/24
+      AvailabilityZone: "ap-northeast-1c"
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pri-1c     
+
+  myInternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-igw
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: myVPC
+      InternetGatewayId:
+        Ref: myInternetGateway
+
+  myRouteTable01:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pub-rtb-01
+
+  myRouteTable02:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pri-rtb-01
+
+  myRouteTable03:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:  
+        Ref: myVPC
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-pri-rtb-02  
+
+  mySubnetRouteTableAssociation01:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnet01
+      RouteTableId:
+        Ref: myRouteTable01
+
+  mySubnetRouteTableAssociation02:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnet02
+      RouteTableId:
+        Ref: myRouteTable01
+
+  mySubnetRouteTableAssociation03:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnet03
+      RouteTableId:
+        Ref: myRouteTable02
+
+  mySubnetRouteTableAssociation04:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId:
+        Ref: mySubnet04
+      RouteTableId:
+        Ref: myRouteTable03
+
+  myCarrierRoute:
+    Type: AWS::EC2::Route
+    #DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId:
+        Ref: myRouteTable01
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: myInternetGateway
+
+  NATGateway-1a:
+    Type: AWS::EC2::NatGateway
+    Properties:
+        AllocationId: !GetAtt NATGatewayEIP01.AllocationId
+        SubnetId: !Ref mySubnet01
+        Tags:
+        - Key: Name
+          Value: !Sub ${author}-ngw-1a
+
+  NATGatewayEIP01:
+    Type: AWS::EC2::EIP
+    Properties:
+        Domain: vpc
+
+  RouteNATGateway01:
+    Type: AWS::EC2::Route
+    Properties:
+        RouteTableId: !Ref myRouteTable02
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !Ref NATGateway-1a
+
+  NATGateway-1c:
+    Type: AWS::EC2::NatGateway
+    Properties:
+        AllocationId: !GetAtt NATGatewayEIP02.AllocationId
+        SubnetId: !Ref mySubnet02
+        Tags:
+        - Key: Name
+          Value: !Sub ${author}-ngw-1c
+
+  NATGatewayEIP02:
+    Type: AWS::EC2::EIP
+    Properties:
+        Domain: vpc
+
+  RouteNATGateway02:
+    Type: AWS::EC2::Route
+    Properties:
+        RouteTableId: !Ref myRouteTable03
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId: !Ref NATGateway-1c
+
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:    
+      GroupDescription: for bastion server
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-sg-bas  
+
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: for web server
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-sg-Web  
+
+  BastionServer: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-08ce76bae392de7dc
+      KeyName: 
+        Ref: keypair
+      NetworkInterfaces: 
+        - AssociatePublicIpAddress: "true"
+          DeviceIndex: "0"
+          GroupSet: 
+            - Ref: BastionSecurityGroup
+          SubnetId: 
+            Ref: mySubnet01
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-BationServer 
+      InstanceType: t2.micro
+
+  PCWebServer-1a: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-08ce76bae392de7dc
+      KeyName: 
+        Ref: keypair
+      # NetworkInterfaces: 
+      #   - AssociatePublicIpAddress: "true"
+      #     DeviceIndex: "0"
+      SecurityGroupIds: 
+      - Ref: WebSecurityGroup 
+      SubnetId: 
+        Ref: mySubnet03
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-PCWebServer-1a 
+      InstanceType: t2.micro
+
+  MobileWebServer-1a: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-08ce76bae392de7dc
+      KeyName: 
+        Ref: keypair
+      # NetworkInterfaces: 
+      #   - AssociatePublicIpAddress: "true"
+      #     DeviceIndex: "0"
+      SecurityGroupIds: 
+      - Ref: WebSecurityGroup 
+      SubnetId: 
+        Ref: mySubnet03
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-MobileWebServer-1a 
+      InstanceType: t2.micro
+
+  PCWebServer-1c: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-08ce76bae392de7dc
+      KeyName: 
+        Ref: keypair
+      # NetworkInterfaces: 
+      #   - AssociatePublicIpAddress: "true"
+      #     DeviceIndex: "0"
+      SecurityGroupIds: 
+      - Ref: WebSecurityGroup 
+      SubnetId: 
+        Ref: mySubnet04
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-PCWebServer-1c
+      InstanceType: t2.micro
+
+  MobileWebServer-1c: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: ami-08ce76bae392de7dc
+      KeyName: 
+        Ref: keypair
+      # NetworkInterfaces: 
+      #   - AssociatePublicIpAddress: "true"
+      #     DeviceIndex: "0"
+      SecurityGroupIds: 
+      - Ref: WebSecurityGroup 
+      SubnetId: 
+        Ref: mySubnet04
+      Tags:
+      - Key: Name
+        Value: !Sub ${author}-MobileWebServer-1c  
+      InstanceType: t2.micro
+
+#sOutputs:
