@@ -90,7 +90,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: !Sub ${author}-pub-rtb-01
+        Value: !Sub ${author}-rtb-pub
 
   myRouteTable02:
     Type: AWS::EC2::RouteTable
@@ -99,7 +99,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: !Sub ${author}-pri-rtb-01
+        Value: !Sub ${author}-rtb-pri-1a
 
   myRouteTable03:
     Type: AWS::EC2::RouteTable
@@ -108,7 +108,7 @@ Resources:
         Ref: myVPC
       Tags:
       - Key: Name
-        Value: !Sub ${author}-pri-rtb-02  
+        Value: !Sub ${author}-rtb-pri-1c  
 
   mySubnetRouteTableAssociation01:
     Type: AWS::EC2::SubnetRouteTableAssociation
