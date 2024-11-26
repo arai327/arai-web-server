@@ -8,10 +8,6 @@ Parameters:
     Type: String
     Default: arai
 
-  keypair:
-    Description: please select your keypair
-    Type: AWS::EC2::KeyPair::KeyName
-
 #Mappings: 
 
 #Conditions: 
@@ -258,8 +254,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
-      KeyName: 
-        Ref: keypair
+      KeyName: arai-keypair
       # NetworkInterfaces: 
       #   - AssociatePublicIpAddress: "true"
       #     DeviceIndex: "0"
@@ -276,8 +271,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
-      KeyName: 
-        Ref: keypair
+      KeyName: arai-keypair
       # NetworkInterfaces: 
       #   - AssociatePublicIpAddress: "true"
       #     DeviceIndex: "0"
@@ -294,8 +288,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
-      KeyName: 
-        Ref: keypair
+      KeyName: arai-keypair
       # NetworkInterfaces: 
       #   - AssociatePublicIpAddress: "true"
       #     DeviceIndex: "0"
@@ -312,8 +305,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
-      KeyName: 
-        Ref: keypair
+      KeyName: arai-keypair
       # NetworkInterfaces: 
       #   - AssociatePublicIpAddress: "true"
       #     DeviceIndex: "0"
