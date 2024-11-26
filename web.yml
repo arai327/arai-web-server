@@ -236,8 +236,7 @@ Resources:
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
-      KeyName: 
-        Ref: keypair
+      KeyName: arai-keypair
       NetworkInterfaces: 
         - AssociatePublicIpAddress: "true"
           DeviceIndex: "0"
@@ -318,4 +317,4 @@ Resources:
         Value: !Sub ${author}-MobileWebServer-1c  
       InstanceType: t2.micro
 
-#sOutputs:
+#Outputs:
