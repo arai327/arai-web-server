@@ -148,7 +148,7 @@ Resources:
       GatewayId:
         Ref: myInternetGateway
 
-  NATGateway-1a:
+  NATGateway01:
     Type: AWS::EC2::NatGateway
     Properties:
         AllocationId: !GetAtt NATGatewayEIP01.AllocationId
@@ -167,9 +167,9 @@ Resources:
     Properties:
         RouteTableId: !Ref myRouteTable02
         DestinationCidrBlock: 0.0.0.0/0
-        NatGatewayId: !Ref NATGateway-1a
+        NatGatewayId: !Ref NATGateway01
 
-  NATGateway-1c:
+  NATGateway02:
     Type: AWS::EC2::NatGateway
     Properties:
         AllocationId: !GetAtt NATGatewayEIP02.AllocationId
@@ -188,7 +188,7 @@ Resources:
     Properties:
         RouteTableId: !Ref myRouteTable03
         DestinationCidrBlock: 0.0.0.0/0
-        NatGatewayId: !Ref NATGateway-1c
+        NatGatewayId: !Ref NATGateway02
 
   BastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -250,7 +250,7 @@ Resources:
         Value: !Sub ${author}-BationServer 
       InstanceType: t2.micro
 
-  PCWebServer-1a: 
+  PCWebServer01: 
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
@@ -267,7 +267,7 @@ Resources:
         Value: !Sub ${author}-PCWebServer-1a 
       InstanceType: t2.micro
 
-  MobileWebServer-1a: 
+  MobileWebServer01: 
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
@@ -284,7 +284,7 @@ Resources:
         Value: !Sub ${author}-MobileWebServer-1a 
       InstanceType: t2.micro
 
-  PCWebServer-1c: 
+  PCWebServer02: 
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
@@ -301,7 +301,7 @@ Resources:
         Value: !Sub ${author}-PCWebServer-1c
       InstanceType: t2.micro
 
-  MobileWebServer-1c: 
+  MobileWebServer02: 
     Type: AWS::EC2::Instance
     Properties: 
       ImageId: ami-08ce76bae392de7dc
